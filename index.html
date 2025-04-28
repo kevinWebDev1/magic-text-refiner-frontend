@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Keyboard Refiner</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #8b5cf6;
+            --primary-hover: #7c4dff;
+            --disabled-color: #b39ddb;
+            --error-color: #ff4444;
+            --success-color: #4caf50;
+            --border-color: #e0e0e0;
+            --bg-color: #f9f9f9;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+
+        h2 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .container {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        textarea {
+            width: 95%;
+            height: 150px;
+            padding: 15px;
+            font-size: 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            resize: vertical;
+            margin-bottom: 15px;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            background-color: var(--disabled-color);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #output {
+            margin-top: 10px;
+            margin-bottom: 15px;
+            padding: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--bg-color);
+            min-height: 50px;
+            white-space: pre-wrap;
+            position: relative;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 15px 0;
+            color: var(--primary-color);
+        }
+
+        .loading i {
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error {
+            color: var(--error-color);
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .outputContainer {
+            margin-top: 10px;
+        }
+
+        .copy-message {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--success-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 100;
+        }
+
+        .show {
+            opacity: 1;
+        }
+
+        .char-count {
+            text-align: right;
+            font-size: 14px;
+            color: #666;
+            margin-top: -10px;
+            margin-bottom: 10px;
+        }
+
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .output-title {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>✨ AI Magic Refiner</h2>
+
+        <textarea id="inputText" placeholder="Type or paste your text here..."></textarea>
+        <div class="char-count"><span id="charCount">0</span>/2000 characters</div>
+
+        <div class="button-group">
+            <button id="refineBtn" onclick="refineText()">
+                <i class="fas fa-magic"></i> Refine Text
+            </button>
+        </div>
+
+        <div id="loading" class="loading">
+            <i class="fas fa-spinner"></i> Refining your text...
+        </div>
+
+        <div id="error" class="error">
+            <i class="fas fa-exclamation-circle"></i>
+            <span id="errorText"></span>
+        </div>
+
+        <div id="outputContainer" class="outputContainer" style="display: none;">
+            <span class="output-title">Refined Text:</span>
+            <div id="output"></div>
+            <div class="output-header">
+                <button id="copyBtn" onclick="copyText()">
+                    <i class="far fa-copy"></i> Copy
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="copyMessage" class="copy-message">
+        <i class="fas fa-check"></i> Text copied to clipboard!
+    </div>
+
+    <script>
+        const refineBtn = document.getElementById("refineBtn");
+        const loadingEl = document.getElementById("loading");
+        const errorEl = document.getElementById("error");
+        const errorTextEl = document.getElementById("errorText");
+        const outputEl = document.getElementById("output");
+        const outputContainer = document.getElementById("outputContainer");
+        const inputTextEl = document.getElementById("inputText");
+        const charCountEl = document.getElementById("charCount");
+        const copyMessageEl = document.getElementById("copyMessage");
+
+        // Character counter
+        inputTextEl.addEventListener("input", () => {
+            const count = inputTextEl.value.length;
+            charCountEl.textContent = count;
+
+            if (count > 2000) {
+                charCountEl.style.color = "var(--error-color)";
+            } else {
+                charCountEl.style.color = "#666";
+            }
+        });
+
+        async function refineText() {
+            const input = inputTextEl.value.trim();
+
+            if (!input) {
+                showError("Please enter some text first!");
+                return;
+            }
+
+            if (input.length > 2000) {
+                showError("Text is too long (max 2000 characters)");
+                return;
+            }
+
+            // Clear previous error & hide output
+            clearError();
+            outputContainer.style.display = "none";
+
+            // Show loading state
+            refineBtn.disabled = true;
+            loadingEl.style.display = "block";
+
+            try {
+                const response = await fetch("http://localhost:5500/refine", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ text: input }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                let refinedText = data.refinedText;
+
+                // Use regex to extract content inside \boxed{...}
+                // const match = refinedText.match(/\\boxed\s*{([^}]*)}/);
+                // if (match) {
+                //     refinedText = match[1]; // Extracted text inside \boxed{}
+                //     console.log(refinedText)
+                // }
+
+                outputEl.textContent = refinedText;
+                outputContainer.style.display = "block";
+
+
+            } catch (err) {
+                showError("Failed to refine text. Please try again.");
+                console.error("Refinement error:", err);
+            } finally {
+                refineBtn.disabled = false;
+                loadingEl.style.display = "none";
+            }
+        }
+
+        function showError(message) {
+            errorTextEl.textContent = message;
+            errorEl.style.display = "flex";
+        }
+
+        function clearError() {
+            errorEl.style.display = "none";
+        }
+
+        async function copyText() {
+            try {
+                await navigator.clipboard.writeText(outputEl.textContent);
+                copyMessageEl.classList.add("show");
+                setTimeout(() => {
+                    copyMessageEl.classList.remove("show");
+                }, 2000);
+            } catch (err) {
+                showError("Failed to copy text");
+                console.error("Copy error:", err);
+            }
+        }
+
+        // Initialize
+        clearError();
+    </script>
+</body>
+
+</html>
