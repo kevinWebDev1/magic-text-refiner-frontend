@@ -43,7 +43,7 @@ async function refineText() {
     loadingEl.style.display = "block";
 
     try {
-        const response = await fetch("http://127.0.0.1:5500/frontend/refine", {
+        const response = await fetch("https://ai-magic-text-refiner.vercel.app/refine", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ text: input }),
