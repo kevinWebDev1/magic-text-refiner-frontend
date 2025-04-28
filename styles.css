@@ -26,10 +26,6 @@ h2 {
 }
 
 .container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
     background: white;
     padding: 30px;
     border-radius: 12px;
@@ -37,6 +33,8 @@ h2 {
 }
 
 textarea {
+    display: flex;
+    align-self: end;
     width: 100%;
     height: 150px;
     padding: 15px;
@@ -152,8 +150,6 @@ button:disabled {
 }
 
 .char-count {
-    display: flex;
-    align-self: end;
     font-size: 14px;
     color: #666;
     margin-top: -10px;
