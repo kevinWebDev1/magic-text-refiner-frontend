@@ -1,5 +1,6 @@
 
 const refineBtn = document.getElementById("refineBtn");
+const chatBtn = document.getElementById("chatBtn");
 const loadingEl = document.getElementById("loading");
 const errorEl = document.getElementById("error");
 const errorTextEl = document.getElementById("errorText");
@@ -71,6 +72,54 @@ async function refineText() {
     } catch (err) {
         showError("Failed to refine text. Please try again.");
         console.error("Refinement error:", err);
+    } finally {
+        refineBtn.disabled = false;
+        loadingEl.style.display = "none";
+    }
+}
+async function chatText() {
+    const input = inputTextEl.value.trim();
+
+    if (!input) {
+        showError("Please enter some text first!");
+        return;
+    }
+
+    if (input.length > 2000) {
+        showError("Text is too long (max 2000 characters)");
+        return;
+    }
+
+    // Clear previous error & hide output
+    clearError();
+    outputContainer.style.display = "none";
+
+    // Show loading state
+    chatBtn.disabled = true;
+    loadingEl.style.display = "block";
+
+    try {
+        const response = await fetch("https://refiner-backend.vercel.app/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text: input }),
+        });
+
+        if (!response.ok) {
+            throw new Error(`API Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        let chatText = data.chatText;
+
+        outputEl.textContent = chatText;
+        outputContainer.style.display = "block";
+
+
+    } catch (err) {
+        showError("Failed to chat. Please try again.");
+        console.error("Chat error:", err);
     } finally {
         refineBtn.disabled = false;
         loadingEl.style.display = "none";
