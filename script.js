@@ -121,7 +121,7 @@ async function chatText() {
         showError("Failed to chat. Please try again.");
         console.error("Chat error:", err);
     } finally {
-        refineBtn.disabled = false;
+        chatBtn.disabled = false;
         loadingEl.style.display = "none";
     }
 }
