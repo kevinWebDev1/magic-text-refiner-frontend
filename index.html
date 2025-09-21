@@ -1,55 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<link>
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Keyboard Refiner</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css"></link>
+    <title>Hinglish Refiner & Casual Chat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <link rel="stylesheet" href="styles.css">
 </head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
 
-<body>
-    <div class="container">
-        <h2>✨ AI Magic Refiner</h2>
+    <div class="container mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+        
+        <!-- Refine Hinglish Section -->
+        <div class="card flex flex-col items-center">
+            <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Hinglish Refiner</h1>
+            <p class="text-gray-600 mb-6 text-center">Type your Hinglish message below to get a corrected and clear version.</p>
 
-        <textarea id="inputText" placeholder="Type or paste your text here..."></textarea>
-        <div class="char-count"><span id="charCount">0</span>/2000 characters</div>
-
-        <div class="button-group">
-            <button id="refineBtn" onclick="refineText()">
-                <i class="fas fa-magic"></i> Refine Text
+            <textarea id="refine-input" rows="6" class="w-full p-4 text-gray-700 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all mb-4" placeholder="Type your Hinglish here..."></textarea>
+            
+            <button id="refine-button" class="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-300 transform active:scale-95 flex items-center justify-center">
+                Refine Text
             </button>
-            <button id="chatBtn" onclick="chatText()">
-                <i class="fas fa-magic"></i> Chat
-            </button>
-        </div>
-
-        <div id="loading" class="loading">
-            <i class="fas fa-spinner"></i> Proceeding with your text...
-        </div>
-
-        <div id="error" class="error">
-            <i class="fas fa-exclamation-circle"></i>
-            <span id="errorText"></span>
-        </div>
-
-        <div id="outputContainer" class="outputContainer" style="display: none;">
-            <span class="output-title">Refined Text:</span>
-            <div id="output"></div>
-            <div class="output-header">
-                <button id="copyBtn" onclick="copyText()">
-                    <i class="far fa-copy"></i> Copy
-                </button>
+            
+            <div id="refine-output" class="mt-8 w-full p-4 bg-gray-50 border border-gray-300 rounded-lg text-gray-800 break-words min-h-[5rem]">
+                <p class="text-gray-500 italic">Refined text will appear here...</p>
             </div>
         </div>
-    </div>
 
-    <div id="copyMessage" class="copy-message">
-        <i class="fas fa-check"></i> Text copied to clipboard!
+        <!-- Casual Chat Section -->
+        <div class="card flex flex-col items-center">
+            <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Casual Chat</h1>
+            <p class="text-gray-600 mb-6 text-center">Ask me anything and I'll reply like a close friend.</p>
+
+            <textarea id="chat-input" rows="6" class="w-full p-4 text-gray-700 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all mb-4" placeholder="What's up?"></textarea>
+
+            <button id="chat-button" class="w-full bg-green-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 transition-all duration-300 transform active:scale-95 flex items-center justify-center">
+                Reply
+            </button>
+
+            <div id="chat-output" class="mt-8 w-full p-4 bg-gray-50 border border-gray-300 rounded-lg text-gray-800 break-words min-h-[5rem]">
+                <p class="text-gray-500 italic">Reply will appear here...</p>
+            </div>
+        </div>
+
     </div>
 
     <script src="script.js"></script>
 </body>
-
 </html>

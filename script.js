@@ -1,152 +1,93 @@
+document.addEventListener('DOMContentLoaded', () => {
 
-const refineBtn = document.getElementById("refineBtn");
-const chatBtn = document.getElementById("chatBtn");
-const loadingEl = document.getElementById("loading");
-const errorEl = document.getElementById("error");
-const errorTextEl = document.getElementById("errorText");
-const outputEl = document.getElementById("output");
-const outputContainer = document.getElementById("outputContainer");
-const inputTextEl = document.getElementById("inputText");
-const charCountEl = document.getElementById("charCount");
-const copyMessageEl = document.getElementById("copyMessage");
+    // Refine Text elements
+    const refineInput = document.getElementById('refine-input');
+    const refineButton = document.getElementById('refine-button');
+    const refineOutput = document.getElementById('refine-output');
 
-// Character counter
-inputTextEl.addEventListener("input", () => {
-    const count = inputTextEl.value.length;
-    charCountEl.textContent = count;
+    // Chat elements
+    const chatInput = document.getElementById('chat-input');
+    const chatButton = document.getElementById('chat-button');
+    const chatOutput = document.getElementById('chat-output');
 
-    if (count > 2000) {
-        charCountEl.style.color = "var(--error-color)";
-    } else {
-        charCountEl.style.color = "#666";
-    }
+    const SERVER_URL = "https://refiner-backend.vercel.app";
+    // const LOCAL_SERVER_URL = "http://localhost:5000";
+
+    // Utility function to handle POST REQUEST
+
+    const refineFunction = async (userInput) => {
+        try {
+            const response = await axios.post(`${SERVER_URL}/refine`, { text: userInput });
+
+            const refinedText = response.data.refinedText || "";
+
+            refineOutput.innerText = refinedText;
+        } catch (error) {
+            console.error('API call failed:', error);
+            refineOutput.innerText = `Error: ${error.message || 'Failed to get a response from the API.'}`;
+        }
+    };
+
+
+    const chatFunction = async (userInput) => {
+        try {
+            const response = await axios.post(`${SERVER_URL}/chat`, { text: userInput });
+
+            const chatResponse = response.data.chatReply || "";
+
+            chatOutput.innerText = chatResponse;
+        } catch (error) {
+            console.error('API call failed:', error);
+            chatOutput.innerText = `Error: ${error.message || 'Failed to get a response from the API.'}`;
+        }
+    };
+
+    // Event listener for Refine button
+    refineButton.addEventListener('click', () => {
+        const userText = refineInput.value;
+        console.log("userText ::>", userText);
+        if (!userText || typeof userText !== "string") {
+            refineOutput.innerHTML = '<p class="text-gray-500 italic">Please enter some text to refine.</p>';
+            return;
+        }
+        refineOutput.innerHTML =  `<div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] text-blue-600 motion-reduce:animate-[spin_1.5s_linear_infinite]" role="status">
+  <span class="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">Loading...</span>
+</div>`;
+        refineFunction(userText);
+    });
+
+    // Event listener for Chat button
+    chatButton.addEventListener('click', () => {
+        const userText = chatInput.value;
+        if (!userText) {
+            chatOutput.innerHTML = '<p class="text-gray-500 italic">Please enter a message to chat.</p>';
+            return;
+        }
+        chatOutput.innerHTML = `<div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] text-blue-600 motion-reduce:animate-[spin_1.5s_linear_infinite]" role="status">
+  <span class="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">Loading...</span>
+</div>`;
+
+        chatFunction(userText);
+    });
 });
 
-async function refineText() {
-    const input = inputTextEl.value.trim();
-
-    if (!input) {
-        showError("Please enter some text first!");
-        return;
-    }
-
-    if (input.length > 2000) {
-        showError("Text is too long (max 2000 characters)");
-        return;
-    }
-
-    // Clear previous error & hide output
-    clearError();
-    outputContainer.style.display = "none";
-
-    // Show loading state
-    refineBtn.disabled = true;
-    loadingEl.style.display = "block";
-
-    try {
-        const response = await fetch("https://refiner-backend.vercel.app/refine", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text: input }),
-        });
-
-        if (!response.ok) {
-            throw new Error(`API Error: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        let refinedText = data.refinedText;
-
-        // Use regex to extract content inside \boxed{...}
-        // const match = refinedText.match(/\\boxed\s*{([^}]*)}/);
-        // if (match) {
-        //     refinedText = match[1]; // Extracted text inside \boxed{}
-        //     console.log(refinedText)
-        // }
-
-        outputEl.textContent = refinedText;
-        outputContainer.style.display = "block";
 
 
-    } catch (err) {
-        showError("Failed to refine text. Please try again.");
-        console.error("Refinement error:", err);
-    } finally {
-        refineBtn.disabled = false;
-        loadingEl.style.display = "none";
-    }
-}
-async function chatText() {
-    const input = inputTextEl.value.trim();
-
-    if (!input) {
-        showError("Please enter some text first!");
-        return;
-    }
-
-    if (input.length > 2000) {
-        showError("Text is too long (max 2000 characters)");
-        return;
-    }
-
-    // Clear previous error & hide output
-    clearError();
-    outputContainer.style.display = "none";
-
-    // Show loading state
-    chatBtn.disabled = true;
-    loadingEl.style.display = "block";
-
-    try {
-        const response = await fetch("https://refiner-backend.vercel.app/chat", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text: input }),
-        });
-
-        if (!response.ok) {
-            throw new Error(`API Error: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        let chatText = data.chatText;
-
-        outputEl.textContent = chatText;
-        outputContainer.style.display = "block";
 
 
-    } catch (err) {
-        showError("Failed to chat. Please try again.");
-        console.error("Chat error:", err);
-    } finally {
-        chatBtn.disabled = false;
-        loadingEl.style.display = "none";
-    }
-}
 
-function showError(message) {
-    errorTextEl.textContent = message;
-    errorEl.style.display = "flex";
-}
 
-function clearError() {
-    errorEl.style.display = "none";
-}
 
-async function copyText() {
-    try {
-        await navigator.clipboard.writeText(outputEl.textContent);
-        copyMessageEl.classList.add("show");
-        setTimeout(() => {
-            copyMessageEl.classList.remove("show");
-        }, 2000);
-    } catch (err) {
-        showError("Failed to copy text");
-        console.error("Copy error:", err);
-    }
-}
 
-// Initialize
-clearError();
+
+
+
+
+
+
+
+
+
+
+
+
